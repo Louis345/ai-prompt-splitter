@@ -1,7 +1,12 @@
 import React from "react";
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
-const NewSplitterButton = ({ onClick }) => {
+
+type NewSplitterButtonProps = {
+  onClick: () => void;
+};
+
+const NewSplitterButton: React.FC<NewSplitterButtonProps> = ({ onClick }) => {
   return (
     <Button variant="outlined" fullWidth onClick={onClick}>
       <AddIcon />

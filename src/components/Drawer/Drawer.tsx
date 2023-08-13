@@ -13,11 +13,16 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import NewSplitterButton from "../../components/NewSplitterButton/NewSplitterButton";
 import { Link } from "react-router-dom";
 import { Button } from "@mui/material";
+import DrawerItem from "../DrawerItem/DrawerItem";
 
 const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
+  summaries?: {
+    title: string;
+    chunks: string[];
+  }[];
 }
 
 const AppBar = styled(MuiAppBar, {
@@ -31,10 +36,10 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 interface HeaderDrawerProps {
-  open: boolean;
-  handleDrawerOpen: () => void;
-  handleDrawerClose: () => void;
-  summaries: { title: string; chunks: any[] }[];
+  open?: boolean;
+  handleDrawerOpen?: () => void;
+  handleDrawerClose?: () => void;
+
   onClear: () => void;
   setOpen: (isOpen: boolean) => void;
 }
@@ -64,7 +69,9 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            AI Code Splitter
+            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+              AI Code Splitter
+            </Link>
           </Typography>
           <Button
             component={Link}
@@ -100,6 +107,15 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
           </IconButton>
         </DrawerHeader>
         <NewSplitterButton onClick={onClear} />
+        <DrawerItem
+          title="Sample Title" // this can be fetched from props or state
+          onUpdateTitle={(newTitle) => {
+            // Handle the title update logic here, maybe save to an API or update local state
+          }}
+          onDelete={() => {
+            // Handle the deletion logic here
+          }}
+        />
       </Drawer>
     </Box>
   );

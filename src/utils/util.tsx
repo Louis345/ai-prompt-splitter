@@ -2,6 +2,13 @@ export const textChunker = (text: string, maxCharCount: number): string[] => {
   const numChunks = Math.ceil(text.length / maxCharCount);
   const chunksArray: string[] = [];
 
+  // If the transcript is too short (i.e., only one chunk), handle it specially
+  if (numChunks === 1) {
+    const singleChunkMessage = `Here is the full transcript:\n${text}\n[END OF TRANSCRIPT]`;
+    chunksArray.push(singleChunkMessage);
+    return chunksArray;
+  }
+
   for (let i = 0; i < numChunks; i++) {
     const start = i * maxCharCount;
     const end = start + maxCharCount;

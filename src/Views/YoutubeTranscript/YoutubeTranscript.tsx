@@ -8,6 +8,7 @@ import axios, { AxiosResponse } from "axios";
 import ChunksCopier from "../../components/ChunkCopier/ChunkCopier";
 import { textChunker } from "../../utils/util";
 import Instructions from "../../components/Instructions/Instructions";
+import CharacterCount from "../../components/CharacterCount/CharacterCount";
 
 const MAX_CHAR_COUNT = 10000;
 interface TranscriptResponse {
@@ -29,21 +30,26 @@ function YoutubeTranscript() {
 
       const rawTranscriptArray = response.data.result;
 
-      const formattedTranscript = rawTranscriptArray
-        .map((obj: any) => {
-          const time = new Date(obj.start * 1000).toISOString().substr(11, 8);
-          return `${time} - ${obj.text}`;
-        })
-        .join("\n");
+      const transcriptLines = rawTranscriptArray
+        .map((obj) => obj.text)
+        .join(" ")
+        .split(/\.|!|\?/g)
+        .filter((sentence) => sentence.trim() !== "");
 
-      const transcriptText = (
-        formattedTranscript.match(/[^\.!\?]+[\.!\?]+/g) || ([] as string[])
-      ).reduce((acc, curr, i) => {
-        return i % 10 === 0 ? `${acc}\n\n${curr}` : `${acc} ${curr}`;
-      }, "");
+      const structuredTranscriptText = transcriptLines.reduce(
+        (acc, curr, i) => {
+          let newLineAfterSentence = `${curr.trim()}.\n`;
+          if ((i + 1) % 3 === 0) {
+            newLineAfterSentence += "\n";
+          }
+          return acc + newLineAfterSentence;
+        },
+        ""
+      );
 
-      setTranscript(transcriptText);
-      const chunksArray = textChunker(transcriptText, MAX_CHAR_COUNT);
+      const chunksArray = textChunker(structuredTranscriptText, MAX_CHAR_COUNT);
+
+      setTranscript(structuredTranscriptText);
       setChunks(chunksArray);
     } catch (error) {
       console.error(error);
@@ -68,6 +74,8 @@ function YoutubeTranscript() {
       <Typography variant="h5" gutterBottom>
         Youtube Transcript
       </Typography>
+      <CharacterCount inputText={transcript} />
+
       <form onSubmit={handleSubmit} noValidate autoComplete="off">
         <TextField
           fullWidth
@@ -81,6 +89,7 @@ function YoutubeTranscript() {
           Generate Transcript
         </Button>
       </form>
+
       <Box
         sx={{
           height: "300px",
@@ -102,7 +111,7 @@ function YoutubeTranscript() {
         <ChunksCopier chunks={chunks} handleCopy={handleCopy} />
       </Box>
 
-      {chunks.length > 1 && <Instructions />}
+      {chunks.length > 0 && <Instructions />}
     </Box>
   );
 }

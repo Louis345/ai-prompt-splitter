@@ -2,7 +2,11 @@ import { Card, Stack, Typography, Box, Divider, Switch } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
 
-export default function ListItem({ name }) {
+type ListItemProps = {
+  name: string;
+};
+
+export default function ListItem({ name }: ListItemProps) {
   return (
     <Card sx={{ bgcolor: "#343541" }}>
       <Box sx={{ p: 2, display: "flex" }}>

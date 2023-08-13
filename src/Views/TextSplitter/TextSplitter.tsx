@@ -29,7 +29,8 @@ export default function TextSplitter() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [inputText, setInputText] = React.useState("");
-  const [chunks, setChunks] = React.useState([]);
+  const [chunks, setChunks] = React.useState<string[]>([]);
+
   const [summaries, setSummaries] = React.useState([
     {
       title: "Real Estate",
@@ -43,9 +44,9 @@ export default function TextSplitter() {
     setChunks([]);
   };
 
-  const handleTextChange = (event) => {
+  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
-    setChunks(textChunker(event.target.value, MAX_CHAR_COUNT)); // Use the util function
+    setChunks(textChunker(event.target.value, MAX_CHAR_COUNT));
   };
 
   const handleCopy = (chunk: string) => {
