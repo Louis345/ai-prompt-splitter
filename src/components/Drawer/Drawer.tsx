@@ -39,7 +39,7 @@ interface HeaderDrawerProps {
   open?: boolean;
   handleDrawerOpen?: () => void;
   handleDrawerClose?: () => void;
-
+  createCollection: (title: string) => void;
   onClear: () => void;
   setOpen: (isOpen: boolean) => void;
 }
@@ -48,9 +48,12 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
   open,
   onClear,
   setOpen,
+  createCollection,
+  summaries,
+  setSummaries,
 }) => {
   const theme = useTheme();
-  console.log("open", open);
+  console.log("summaries", summaries);
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -69,7 +72,10 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link
+              to="/summary"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               AI Code Splitter
             </Link>
           </Typography>
@@ -98,24 +104,45 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
         open={open}
       >
         <DrawerHeader>
-          <IconButton onClick={() => setOpen(false)}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
+          <Box sx={{ display: "flex", marginBottom: "20px" }}>
+            <IconButton onClick={() => setOpen(false)}>
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+            <NewSplitterButton
+              onClick={() => {
+                setSummaries((prevSummaries) => {
+                  return [
+                    ...prevSummaries,
+                    {
+                      title: "", // or "Untitled" or any default name you prefer
+                      chunks: [],
+                      id: Date.now(), // This is a temporary id using the current timestamp, assuming that you might replace this with an actual id once saved to the backend
+                    },
+                  ];
+                });
+              }}
+            />
+          </Box>
         </DrawerHeader>
-        <NewSplitterButton onClick={onClear} />
-        <DrawerItem
-          title="Sample Title" // this can be fetched from props or state
-          onUpdateTitle={(newTitle) => {
-            // Handle the title update logic here, maybe save to an API or update local state
-          }}
-          onDelete={() => {
-            // Handle the deletion logic here
-          }}
-        />
+        {summaries.map((summary, index) => (
+          <DrawerItem
+            key={index}
+            title={summary.title}
+            id={summary.id}
+            onUpdateTitle={(newTitle) => {
+              createCollection(newTitle);
+              // You might also need to handle the update in the parent state
+            }}
+            onDelete={() => {
+              // Handle the deletion logic here
+              // You might want to remove this summary from the parent state
+            }}
+          />
+        ))}
       </Drawer>
     </Box>
   );

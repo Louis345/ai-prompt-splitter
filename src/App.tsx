@@ -13,8 +13,8 @@ function App() {
     {
       title: "Real Estate",
       chunks: ["test"],
+      id: 50,
     },
-    { title: "stock investing", chunks: [] },
   ]);
 
   const [open, setOpen] = React.useState(false);
@@ -22,12 +22,11 @@ function App() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        console.log("token", token);
         if (!token) {
           console.warn("Token is missing. Cannot fetch collections.");
           return;
         }
-        console.log("token", token);
+
         const response = await axios.get(
           "http://localhost:3001/api/collection",
           {
@@ -36,12 +35,16 @@ function App() {
             },
           }
         );
-        setSummaries(
-          response.data.map((collection: any) => ({
+
+        setSummaries((prevSummaries) => {
+          const newSummaries = response.data.map((collection: any) => ({
             title: collection.name,
             chunks: collection.chunks,
-          }))
-        );
+            id: collection.id,
+          }));
+
+          return [...prevSummaries, ...newSummaries];
+        });
       } catch (error) {
         console.error("Failed to fetch collections:", error);
       }
@@ -50,15 +53,89 @@ function App() {
     fetchCollections();
   }, [token]);
 
+  const handleAddCollection = async (newTitle: string) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3001/api/collection",
+        { name: newTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSummaries((prev) => [
+        ...prev,
+        {
+          title: response.data.name,
+          chunks: [],
+        },
+      ]);
+    } catch (error) {
+      console.error("Failed to add new collection:", error);
+    }
+  };
+  const handleAddTranscript = async (
+    collectionId: string,
+    transcriptText: string
+  ) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/collection/${collectionId}/chunks`,
+        { text: transcriptText },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSummaries((prev) => {
+        const updated = [...prev];
+        const index = updated.findIndex((item) => item.id === collectionId);
+        if (index > -1) {
+          updated[index].chunks.push(response.data.text);
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error("Failed to add transcript:", error);
+    }
+  };
+
   return (
     <div className="App">
       <Router>
-        <CustomDrawer open={open} setOpen={setOpen} onClear={() => {}} />
+        <CustomDrawer
+          open={open}
+          setOpen={setOpen}
+          onClear={() => {}}
+          createCollection={handleAddCollection}
+          summaries={summaries}
+          setSummaries={setSummaries}
+        />
         <Routes>
           <Route path="/signin" element={<SignIn />} />
           <Route
-            path="/"
-            element={<PrivateRoute element={<TextSplitter />} />}
+            path="/summary/:collectionId"
+            element={
+              <PrivateRoute
+                element={
+                  <TextSplitter handleAddTranscript={handleAddTranscript} />
+                }
+              />
+            }
+          />
+          <Route
+            path="/summary"
+            element={
+              <PrivateRoute
+                element={
+                  <TextSplitter handleAddTranscript={handleAddTranscript} />
+                }
+              />
+            }
           />
           <Route
             path="/youtube-transcript"

@@ -21,7 +21,7 @@ const SignIn: React.FC = () => {
       if (response.status === 200 && response.data.token) {
         console.log("Successfully signed in:", response.data);
         setToken(response.data.token);
-        navigate("/");
+        navigate("/summary");
       } else {
         console.error("Failed to sign in:", response.data);
       }
