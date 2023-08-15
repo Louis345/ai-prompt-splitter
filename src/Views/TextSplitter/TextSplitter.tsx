@@ -4,7 +4,8 @@ import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Typography from "@mui/material/Typography";
-import { TextField } from "@mui/material";
+import { Button, TextField } from "@mui/material";
+import debounce from "lodash.debounce";
 import CharacterCount from "../../components/CharacterCount/CharacterCount";
 import Instructions from "../../components/Instructions/Instructions";
 import { textChunker } from "../../utils/util"; // Import the util function
@@ -25,9 +26,12 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
 const MAX_CHAR_COUNT = 10000;
 interface TextSplitterProps {
   handleAddTranscript: (collectionId: string, transcriptText: string) => void;
+  handleAddCollection: (collectionTitle?: string) => void;
 }
+
 export default function TextSplitter({
   handleAddTranscript,
+  handleAddCollection,
 }: TextSplitterProps) {
   const { token } = useAuth();
   const { collectionId } = useParams<{ collectionId?: string }>();
@@ -35,28 +39,28 @@ export default function TextSplitter({
   const [inputText, setInputText] = React.useState("");
   const [chunks, setChunks] = React.useState<string[]>([]);
   const [currentCollection, setCurrentCollection] = React.useState<any>(null);
-
-  const [summaries, setSummaries] = React.useState([
-    {
-      title: "Real Estate",
-      chunks: [],
-    },
-    { title: "stock investing", chunks: [] },
-  ]);
+  const [hasInitializedCollection, setHasInitializedCollection] =
+    React.useState(false);
 
   const onClear = () => {
     setInputText("");
     setChunks([]);
   };
 
-  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(event.target.value);
-    setChunks(textChunker(event.target.value, MAX_CHAR_COUNT));
-  };
-
   const handleCopy = (chunk: string) => {
     navigator.clipboard.writeText(chunk);
   };
+
+  const handleNewCollection = async () => {
+    // Reset the states
+    setInputText("");
+    setChunks([]);
+    setCurrentCollection(null);
+    setHasInitializedCollection(false);
+
+    await handleAddCollection();
+  };
+
   React.useEffect(() => {
     const fetchCollectionData = async () => {
       if (collectionId) {
@@ -78,9 +82,32 @@ export default function TextSplitter({
         }
       }
     };
+    if (collectionId) {
+      fetchCollectionData();
+    }
+  }, [collectionId, token]);
 
-    fetchCollectionData();
-  }, [collectionId]);
+  const debouncedHandleAddTranscript = React.useCallback(
+    debounce((text: string) => {
+      if (collectionId) handleAddTranscript(collectionId, text);
+    }, 500),
+    [collectionId]
+  );
+
+  const handleTextChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const textValue = event.target.value;
+    setInputText(textValue);
+    setChunks(textChunker(textValue, MAX_CHAR_COUNT));
+
+    if (!collectionId && !hasInitializedCollection) {
+      await handleAddCollection();
+      setHasInitializedCollection(true);
+    }
+
+    debouncedHandleAddTranscript(textValue);
+  };
 
   return (
     <Box
@@ -131,6 +158,14 @@ export default function TextSplitter({
               <Instructions />
             </Box>
           )}
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleNewCollection}
+            sx={{ margin: "1rem 0", width: "100%" }}
+          >
+            New Chat
+          </Button>
         </Box>
       </Main>
     </Box>

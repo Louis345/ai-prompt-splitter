@@ -7,15 +7,10 @@ import CustomDrawer from "./components/Drawer/Drawer";
 import axios from "axios";
 import SignIn from "./Views/SignIn/SignIn";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
+import { Summary, UpdateCollectionParams } from "./types";
 
 function App() {
-  const [summaries, setSummaries] = React.useState([
-    {
-      title: "Real Estate",
-      chunks: ["test"],
-      id: 50,
-    },
-  ]);
+  const [summaries, setSummaries] = React.useState<Summary[]>([]);
 
   const [open, setOpen] = React.useState(false);
   const { token } = useAuth();
@@ -36,14 +31,14 @@ function App() {
           }
         );
 
-        setSummaries((prevSummaries) => {
+        setSummaries(() => {
           const newSummaries = response.data.map((collection: any) => ({
             title: collection.name,
             chunks: collection.chunks,
             id: collection.id,
           }));
 
-          return [...prevSummaries, ...newSummaries];
+          return newSummaries;
         });
       } catch (error) {
         console.error("Failed to fetch collections:", error);
@@ -57,7 +52,7 @@ function App() {
     try {
       const response = await axios.post(
         "http://localhost:3001/api/collection",
-        { name: newTitle },
+        { name: newTitle ? newTitle : "New Chat" },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -70,12 +65,61 @@ function App() {
         {
           title: response.data.name,
           chunks: [],
+          id: response.data.id,
         },
       ]);
     } catch (error) {
       console.error("Failed to add new collection:", error);
     }
   };
+
+  async function updateCollection({
+    collectionId,
+    newName,
+  }: UpdateCollectionParams) {
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/api/collection/${collectionId}`,
+        {
+          name: newName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data) {
+        const updatedCollection = response.data;
+
+        const updatedSummary: Summary = {
+          id: updatedCollection.id,
+          title: updatedCollection.name,
+          chunks: updatedCollection.chunks,
+        };
+
+        setSummaries((prevSummaries) => {
+          const updatedSummaries = [...prevSummaries];
+          const indexToUpdate = updatedSummaries.findIndex(
+            (summary) => summary.id === updatedSummary.id
+          );
+
+          if (indexToUpdate !== -1) {
+            updatedSummaries[indexToUpdate] = updatedSummary;
+          }
+
+          return updatedSummaries;
+        });
+      } else {
+        throw new Error("Unexpected response while updating collection");
+      }
+    } catch (error) {
+      console.error("Error updating collection:", error);
+      throw error;
+    }
+  }
+
   const handleAddTranscript = async (
     collectionId: string,
     transcriptText: string
@@ -104,6 +148,34 @@ function App() {
     }
   };
 
+  const deleteCollection = async (collectionId: string) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/collection/${collectionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 204) {
+        setSummaries((prevSummaries) => {
+          return prevSummaries.filter(
+            (summary) => String(summary.id) !== collectionId
+          );
+        });
+      } else {
+        console.error(
+          "Unexpected response status when deleting the collection:",
+          response.status
+        );
+      }
+    } catch (error) {
+      console.error("Error occurred while deleting the collection:", error);
+    }
+  };
+
   return (
     <div className="App">
       <Router>
@@ -111,9 +183,9 @@ function App() {
           open={open}
           setOpen={setOpen}
           onClear={() => {}}
-          createCollection={handleAddCollection}
+          updateCollection={updateCollection}
+          deleteCollection={deleteCollection}
           summaries={summaries}
-          setSummaries={setSummaries}
         />
         <Routes>
           <Route path="/signin" element={<SignIn />} />
@@ -122,7 +194,10 @@ function App() {
             element={
               <PrivateRoute
                 element={
-                  <TextSplitter handleAddTranscript={handleAddTranscript} />
+                  <TextSplitter
+                    handleAddTranscript={handleAddTranscript}
+                    handleAddCollection={handleAddCollection}
+                  />
                 }
               />
             }
@@ -132,7 +207,10 @@ function App() {
             element={
               <PrivateRoute
                 element={
-                  <TextSplitter handleAddTranscript={handleAddTranscript} />
+                  <TextSplitter
+                    handleAddTranscript={handleAddTranscript}
+                    handleAddCollection={handleAddCollection}
+                  />
                 }
               />
             }

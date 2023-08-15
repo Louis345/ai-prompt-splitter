@@ -10,19 +10,15 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import NewSplitterButton from "../../components/NewSplitterButton/NewSplitterButton";
 import { Link } from "react-router-dom";
 import { Button } from "@mui/material";
 import DrawerItem from "../DrawerItem/DrawerItem";
+import { Summary, UpdateCollectionParams } from "../../types";
 
 const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
-  summaries?: {
-    title: string;
-    chunks: string[];
-  }[];
 }
 
 const AppBar = styled(MuiAppBar, {
@@ -39,21 +35,23 @@ interface HeaderDrawerProps {
   open?: boolean;
   handleDrawerOpen?: () => void;
   handleDrawerClose?: () => void;
-  createCollection: (title: string) => void;
+  updateCollection: (params: UpdateCollectionParams) => void;
+  deleteCollection: (collectionId: string) => void;
   onClear: () => void;
   setOpen: (isOpen: boolean) => void;
+  summaries: Summary[];
 }
 
 const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
   open,
   onClear,
   setOpen,
-  createCollection,
+  updateCollection,
+  deleteCollection,
   summaries,
-  setSummaries,
 }) => {
   const theme = useTheme();
-  console.log("summaries", summaries);
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -112,34 +110,18 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
                 <ChevronRightIcon />
               )}
             </IconButton>
-            <NewSplitterButton
-              onClick={() => {
-                setSummaries((prevSummaries) => {
-                  return [
-                    ...prevSummaries,
-                    {
-                      title: "", // or "Untitled" or any default name you prefer
-                      chunks: [],
-                      id: Date.now(), // This is a temporary id using the current timestamp, assuming that you might replace this with an actual id once saved to the backend
-                    },
-                  ];
-                });
-              }}
-            />
           </Box>
         </DrawerHeader>
         {summaries.map((summary, index) => (
           <DrawerItem
             key={index}
             title={summary.title}
-            id={summary.id}
+            id={summary.id.toString()}
             onUpdateTitle={(newTitle) => {
-              createCollection(newTitle);
-              // You might also need to handle the update in the parent state
+              updateCollection({ collectionId: summary.id, newName: newTitle });
             }}
             onDelete={() => {
-              // Handle the deletion logic here
-              // You might want to remove this summary from the parent state
+              deleteCollection(summary.id.toString());
             }}
           />
         ))}
