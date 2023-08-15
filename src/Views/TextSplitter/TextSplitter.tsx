@@ -2,11 +2,10 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-import { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+
 import Typography from "@mui/material/Typography";
 import { Button, TextField } from "@mui/material";
-//@ts-ignore
-import debounce from "lodash.debounce";
+
 import CharacterCount from "../../components/CharacterCount/CharacterCount";
 import Instructions from "../../components/Instructions/Instructions";
 import { textChunker } from "../../utils/util"; // Import the util function
@@ -27,7 +26,7 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
 const MAX_CHAR_COUNT = 10000;
 interface TextSplitterProps {
   handleAddTranscript: (collectionId: string, transcriptText: string) => void;
-  handleAddCollection: (collectionTitle?: string) => void;
+  handleAddCollection: (collectionTitle?: string) => Promise<string | null>;
 }
 
 export default function TextSplitter({
@@ -62,6 +61,14 @@ export default function TextSplitter({
     await handleAddCollection();
   };
 
+  const saveCollection = async () => {
+    const newCollectionId = await handleAddCollection("My New Collection");
+
+    if (newCollectionId) {
+      handleAddTranscript(newCollectionId, inputText);
+    }
+  };
+
   React.useEffect(() => {
     const fetchCollectionData = async () => {
       if (collectionId) {
@@ -88,13 +95,6 @@ export default function TextSplitter({
     }
   }, [collectionId, token]);
 
-  const debouncedHandleAddTranscript = React.useCallback(
-    debounce((text: string) => {
-      if (collectionId) handleAddTranscript(collectionId, text);
-    }, 500),
-    [collectionId]
-  );
-
   const handleTextChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -106,8 +106,6 @@ export default function TextSplitter({
       await handleAddCollection();
       setHasInitializedCollection(true);
     }
-
-    debouncedHandleAddTranscript(textValue);
   };
 
   return (
@@ -159,6 +157,14 @@ export default function TextSplitter({
               <Instructions />
             </Box>
           )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={saveCollection}
+            sx={{ margin: "1rem 0", width: "100%" }}
+          >
+            Save Chat
+          </Button>
           <Button
             variant="contained"
             color="success"

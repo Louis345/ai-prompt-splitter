@@ -48,7 +48,9 @@ function App() {
     fetchCollections();
   }, [token]);
 
-  const handleAddCollection = async (newTitle?: string) => {
+  const handleAddCollection = async (
+    newTitle?: string
+  ): Promise<string | null> => {
     const titleToSend = newTitle ? newTitle : "New Chat";
     try {
       const response = await axios.post(
@@ -61,16 +63,19 @@ function App() {
         }
       );
 
-      setSummaries((prev) => [
-        ...prev,
-        {
-          title: response.data.name,
-          chunks: [],
-          id: response.data.id,
-        },
-      ]);
+      const newCollection = {
+        title: response.data.name,
+        chunks: [],
+        id: response.data.id,
+      };
+
+      setSummaries((prev) => [...prev, newCollection]);
+
+      // Return the collectionId of the newly created collection
+      return newCollection.id;
     } catch (error) {
       console.error("Failed to add new collection:", error);
+      return null; // or you can throw the error if needed
     }
   };
 
