@@ -48,11 +48,12 @@ function App() {
     fetchCollections();
   }, [token]);
 
-  const handleAddCollection = async (newTitle: string) => {
+  const handleAddCollection = async (newTitle?: string) => {
+    const titleToSend = newTitle ? newTitle : "New Chat";
     try {
       const response = await axios.post(
         "http://localhost:3001/api/collection",
-        { name: newTitle ? newTitle : "New Chat" },
+        { name: titleToSend },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -137,7 +138,10 @@ function App() {
 
       setSummaries((prev) => {
         const updated = [...prev];
-        const index = updated.findIndex((item) => item.id === collectionId);
+        const parsedCollectionId = parseInt(collectionId, 10);
+        const index = updated.findIndex(
+          (item) => item.id === parsedCollectionId
+        );
         if (index > -1) {
           updated[index].chunks.push(response.data.text);
         }
@@ -221,9 +225,8 @@ function App() {
               <PrivateRoute
                 element={
                   <YoutubeTranscript
-                    //@ts-ignore
-                    summaries={summaries}
-                    setSummaries={setSummaries}
+                    updateCollection={updateCollection}
+                    handleAddCollection={handleAddCollection}
                   />
                 }
               />

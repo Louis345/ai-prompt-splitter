@@ -5,6 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Typography from "@mui/material/Typography";
 import { Button, TextField } from "@mui/material";
+//@ts-ignore
 import debounce from "lodash.debounce";
 import CharacterCount from "../../components/CharacterCount/CharacterCount";
 import Instructions from "../../components/Instructions/Instructions";

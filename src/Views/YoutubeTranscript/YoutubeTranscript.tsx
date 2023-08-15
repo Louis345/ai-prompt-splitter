@@ -16,7 +16,14 @@ interface TranscriptResponse {
   start: number;
 }
 
-function YoutubeTranscript() {
+interface YoutubeTranscriptProps {
+  handleNewCollection: () => void;
+  handleAddTranscript: (collectionId: string, transcriptText: string) => void;
+}
+function YoutubeTranscript({
+  handleNewCollection,
+  handleAddTranscript,
+}: YoutubeTranscriptProps) {
   const [url, setUrl] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
   const [chunks, setChunks] = useState<string[]>([]);
@@ -87,6 +94,14 @@ function YoutubeTranscript() {
         />
         <Button type="submit" variant="contained" color="primary">
           Generate Transcript
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleNewCollection}
+          sx={{ margin: "1rem 0", width: "100%" }}
+        >
+          New Chat
         </Button>
       </form>
 
