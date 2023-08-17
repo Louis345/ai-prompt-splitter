@@ -2,13 +2,11 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-
 import Typography from "@mui/material/Typography";
 import { Button, TextField } from "@mui/material";
-
 import CharacterCount from "../../components/CharacterCount/CharacterCount";
 import Instructions from "../../components/Instructions/Instructions";
-import { textChunker } from "../../utils/util"; // Import the util function
+import { textChunker } from "../../utils/util";
 import ChunksCopier from "../../components/ChunkCopier/ChunkCopier";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -17,6 +15,7 @@ import { useAuth } from "../../Context/AuthContext";
 const DrawerHeader = styled("div")(({ theme }) => ({
   // ... Your styles ...
 }));
+
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   open?: boolean;
 }>(({ theme, open }) => ({
@@ -24,6 +23,7 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
 }));
 
 const MAX_CHAR_COUNT = 10000;
+
 interface TextSplitterProps {
   handleAddTranscript: (collectionId: string, transcriptText: string) => void;
   handleAddCollection: (collectionTitle?: string) => Promise<string | null>;
@@ -35,14 +35,10 @@ export default function TextSplitter({
 }: TextSplitterProps) {
   const { token } = useAuth();
   const { collectionId } = useParams<{ collectionId?: string }>();
-  const [open, setOpen] = React.useState(false);
   const [inputText, setInputText] = React.useState("");
   const [chunks, setChunks] = React.useState<string[]>([]);
-  const [currentCollection, setCurrentCollection] = React.useState<any>(null);
-  const [hasInitializedCollection, setHasInitializedCollection] =
-    React.useState(false);
 
-  const onClear = () => {
+  const handleClearChat = () => {
     setInputText("");
     setChunks([]);
   };
@@ -51,21 +47,14 @@ export default function TextSplitter({
     navigator.clipboard.writeText(chunk);
   };
 
-  const handleNewCollection = async () => {
-    // Reset the states
-    setInputText("");
-    setChunks([]);
-    setCurrentCollection(null);
-    setHasInitializedCollection(false);
-
-    await handleAddCollection();
-  };
-
   const saveCollection = async () => {
-    const newCollectionId = await handleAddCollection("My New Collection");
-
-    if (newCollectionId) {
-      handleAddTranscript(newCollectionId, inputText);
+    if (collectionId) {
+      handleAddTranscript(collectionId, inputText);
+    } else {
+      const newCollectionId = await handleAddCollection("My New Collection");
+      if (newCollectionId) {
+        handleAddTranscript(newCollectionId, inputText);
+      }
     }
   };
 
@@ -82,7 +71,6 @@ export default function TextSplitter({
             }
           );
           if (response.status === 200) {
-            setCurrentCollection(response.data);
             setInputText(response.data.chunks.join(" "));
           }
         } catch (error) {
@@ -95,17 +83,10 @@ export default function TextSplitter({
     }
   }, [collectionId, token]);
 
-  const handleTextChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const textValue = event.target.value;
     setInputText(textValue);
     setChunks(textChunker(textValue, MAX_CHAR_COUNT));
-
-    if (!collectionId && !hasInitializedCollection) {
-      await handleAddCollection();
-      setHasInitializedCollection(true);
-    }
   };
 
   return (
@@ -120,7 +101,7 @@ export default function TextSplitter({
     >
       <CssBaseline />
 
-      <Main open={open}>
+      <Main>
         <DrawerHeader />
 
         <Box
@@ -168,10 +149,10 @@ export default function TextSplitter({
           <Button
             variant="contained"
             color="success"
-            onClick={handleNewCollection}
+            onClick={handleClearChat}
             sx={{ margin: "1rem 0", width: "100%" }}
           >
-            New Chat
+            Clear Chat
           </Button>
         </Box>
       </Main>

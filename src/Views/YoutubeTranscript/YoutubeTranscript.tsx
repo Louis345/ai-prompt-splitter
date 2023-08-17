@@ -9,6 +9,7 @@ import ChunksCopier from "../../components/ChunkCopier/ChunkCopier";
 import { textChunker } from "../../utils/util";
 import Instructions from "../../components/Instructions/Instructions";
 import CharacterCount from "../../components/CharacterCount/CharacterCount";
+import { UpdateCollectionParams } from "../../types";
 
 const MAX_CHAR_COUNT = 10000;
 interface TranscriptResponse {
@@ -17,16 +18,20 @@ interface TranscriptResponse {
 }
 
 interface YoutubeTranscriptProps {
-  handleNewCollection: () => void;
   handleAddTranscript: (collectionId: string, transcriptText: string) => void;
+  handleAddCollection: (
+    newTitle?: string | undefined
+  ) => Promise<string | null>;
 }
+
 function YoutubeTranscript({
-  handleNewCollection,
   handleAddTranscript,
+  handleAddCollection,
 }: YoutubeTranscriptProps) {
   const [url, setUrl] = useState<string>("");
   const [transcript, setTranscript] = useState<string>("");
   const [chunks, setChunks] = useState<string[]>([]);
+  const [currentCollection, setCurrentCollection] = useState<any>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -63,6 +68,37 @@ function YoutubeTranscript({
     }
   };
 
+  const saveCollection = async () => {
+    try {
+      // First, create a new collection or use the existing one.
+      let collectionId = currentCollection?.id;
+
+      if (!collectionId) {
+        collectionId = await handleAddCollection("My YouTube Chat");
+      }
+
+      // Check if a collection ID is available.
+      if (!collectionId) {
+        console.error("Failed to get collection ID");
+        return;
+      }
+
+      // Add transcript chunks to the collection.
+      await handleAddTranscript(collectionId, chunks.toString());
+
+      console.log("Successfully saved the transcript!");
+    } catch (error) {
+      console.error("Error while saving the collection:", error);
+    }
+  };
+
+  const clearCollection = () => {
+    setUrl("");
+    setTranscript("");
+    setChunks([]);
+    setCurrentCollection(null);
+  };
+
   const handleCopy = (chunk: string) => {
     navigator.clipboard.writeText(chunk);
   };
@@ -97,11 +133,19 @@ function YoutubeTranscript({
         </Button>
         <Button
           variant="contained"
-          color="success"
-          onClick={handleNewCollection}
+          color="primary"
+          onClick={clearCollection}
           sx={{ margin: "1rem 0", width: "100%" }}
         >
-          New Chat
+          Clear Collection
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={saveCollection}
+          sx={{ margin: "1rem 0", width: "100%" }}
+        >
+          Save Collection
         </Button>
       </form>
 

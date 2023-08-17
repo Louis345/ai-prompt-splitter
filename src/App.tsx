@@ -230,8 +230,8 @@ function App() {
               <PrivateRoute
                 element={
                   <YoutubeTranscript
-                    updateCollection={updateCollection}
                     handleAddCollection={handleAddCollection}
+                    handleAddTranscript={handleAddTranscript}
                   />
                 }
               />
