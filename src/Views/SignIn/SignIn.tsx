@@ -13,7 +13,7 @@ const SignIn: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/api/signin", {
+      const response = await axios.post("/api/signin", {
         username,
         password,
       });

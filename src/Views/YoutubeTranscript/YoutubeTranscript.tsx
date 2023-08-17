@@ -38,7 +38,7 @@ function YoutubeTranscript({
 
     try {
       const response: AxiosResponse<{ result: TranscriptResponse[] }> =
-        await axios.get(`http://localhost:3001/api/transcriptApi/?url=${url}`);
+        await axios.get(`/api/transcriptApi/?url=${url}`);
 
       const rawTranscriptArray = response.data.result;
 

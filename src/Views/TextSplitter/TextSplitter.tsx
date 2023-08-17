@@ -62,14 +62,11 @@ export default function TextSplitter({
     const fetchCollectionData = async () => {
       if (collectionId) {
         try {
-          const response = await axios.get(
-            `http://localhost:3001/api/collection/${collectionId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get(`/api/collection/${collectionId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (response.status === 200) {
             setInputText(response.data.chunks.join(" "));
           }

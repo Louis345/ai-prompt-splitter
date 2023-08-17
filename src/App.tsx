@@ -22,14 +22,11 @@ function App() {
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:3001/api/collection",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get("/api/collection", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         setSummaries(() => {
           const newSummaries = response.data.map((collection: any) => ({
@@ -54,7 +51,7 @@ function App() {
     const titleToSend = newTitle ? newTitle : "New Chat";
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/collection",
+        "/api/collection",
         { name: titleToSend },
         {
           headers: {
@@ -85,7 +82,7 @@ function App() {
   }: UpdateCollectionParams) {
     try {
       const response = await axios.put(
-        `http://localhost:3001/api/collection/${collectionId}`,
+        `/api/collection/${collectionId}`,
         {
           name: newName,
         },
@@ -130,9 +127,10 @@ function App() {
     collectionId: string,
     transcriptText: string
   ) => {
+    console.log("handle add transcrip");
     try {
       const response = await axios.post(
-        `http://localhost:3001/api/collection/${collectionId}/chunks`,
+        `/api/collection/${collectionId}/text`,
         { text: transcriptText },
         {
           headers: {
@@ -159,14 +157,11 @@ function App() {
 
   const deleteCollection = async (collectionId: string) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:3001/api/collection/${collectionId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.delete(`/api/collection/${collectionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 204) {
         setSummaries((prevSummaries) => {
