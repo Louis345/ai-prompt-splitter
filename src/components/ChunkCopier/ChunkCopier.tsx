@@ -1,5 +1,6 @@
-import React from "react";
-import { Chip, Box } from "@mui/material";
+import React, { useState } from "react";
+import { Chip, Box, Snackbar } from "@mui/material";
+import Alert from "@mui/material/Alert";
 
 interface ChunksCopierProps {
   chunks: string[];
@@ -7,6 +8,17 @@ interface ChunksCopierProps {
 }
 
 const ChunksCopier: React.FC<ChunksCopierProps> = ({ chunks, handleCopy }) => {
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const handleCopyAndNotify = (chunk: string) => {
+    handleCopy(chunk);
+    setOpenSnackbar(true);
+  };
+
+  const handleClose = () => {
+    setOpenSnackbar(false);
+  };
+
   return chunks.length >= 1 ? (
     <Box
       sx={{
@@ -22,10 +34,20 @@ const ChunksCopier: React.FC<ChunksCopierProps> = ({ chunks, handleCopy }) => {
           label={`Copy Chunk ${index + 1} to Clipboard`}
           clickable
           color="primary"
-          onClick={() => handleCopy(chunk)}
+          onClick={() => handleCopyAndNotify(chunk)}
           key={index}
         />
       ))}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={1000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleClose} severity="success" variant="filled">
+          Copied to clipboard!
+        </Alert>
+      </Snackbar>
     </Box>
   ) : null;
 };
