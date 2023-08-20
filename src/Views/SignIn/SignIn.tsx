@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const SignIn: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -21,6 +22,7 @@ const SignIn: React.FC = () => {
       if (response.status === 200 && response.data.token) {
         console.log("Successfully signed in:", response.data);
         setToken(response.data.token);
+        Cookies.set("token", response.data.token, { expires: 7 });
         navigate("/summary");
       } else {
         console.error("Failed to sign in:", response.data);

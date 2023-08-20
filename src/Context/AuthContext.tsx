@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import Cookies from "js-cookie";
 
 type AuthContextType = {
   token: string | null;
@@ -12,7 +13,8 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
+  const initialToken = Cookies.get("token") || null;
+  const [token, setToken] = useState<string | null>(initialToken);
 
   return (
     <AuthContext.Provider value={{ token, setToken }}>

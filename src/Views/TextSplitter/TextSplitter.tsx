@@ -89,6 +89,7 @@ export default function TextSplitter({
   return (
     <Box
       sx={{
+        overflowY: "auto", // Adds vertical scrolling when needed
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -135,22 +136,32 @@ export default function TextSplitter({
               <Instructions />
             </Box>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={saveCollection}
-            sx={{ margin: "1rem 0", width: "100%" }}
+          <Box // This is the new flexbox container
+            sx={{
+              display: "flex",
+              justifyContent: "space-between", // space the buttons equally apart
+              // align children horizontally
+              flexWrap: "wrap", // allow wrapping if the viewport is too narrow
+              marginTop: "1rem", // add some margin at the top for spacing
+            }}
           >
-            Save Chat
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleClearChat}
-            sx={{ margin: "1rem 0", width: "100%" }}
-          >
-            Clear Chat
-          </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={saveCollection}
+              sx={{ margin: "1rem 0", width: "100%" }}
+            >
+              Save Chat
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleClearChat}
+              sx={{ margin: "1rem 0", width: "100%" }}
+            >
+              Clear Chat
+            </Button>
+          </Box>
         </Box>
       </Main>
     </Box>
