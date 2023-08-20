@@ -38,7 +38,7 @@ function YoutubeTranscript({
 
     try {
       const response: AxiosResponse<{ result: TranscriptResponse[] }> =
-        await axios.get(`/api/youtube-transcript?url=$git{url}`);
+        await axios.get(`/api/youtube-transcript?url=${url}`);
 
       const rawTranscriptArray = response.data.result;
 
@@ -83,7 +83,6 @@ function YoutubeTranscript({
         return;
       }
 
-      // Add transcript chunks to the collection.
       await handleAddTranscript(collectionId, chunks.toString());
 
       console.log("Successfully saved the transcript!");

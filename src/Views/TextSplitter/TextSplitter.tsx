@@ -102,6 +102,7 @@ export default function TextSplitter({
       <Main>
         <DrawerHeader />
 
+        <ChunksCopier chunks={chunks} handleCopy={handleCopy} />
         <Box
           sx={{
             display: "flex",
@@ -111,8 +112,6 @@ export default function TextSplitter({
             height: "100vh",
           }}
         >
-          <ChunksCopier chunks={chunks} handleCopy={handleCopy} />
-
           <CharacterCount inputText={inputText} />
           <TextField
             id="outlined-multiline-static"
