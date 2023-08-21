@@ -10,26 +10,56 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Link } from "react-router-dom";
-import { Button } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+
 import DrawerItem from "../DrawerItem/DrawerItem";
 import { Summary, UpdateCollectionParams } from "../../types";
+import { useAuth } from "../../Context/AuthContext";
+import { Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+import Cookies from "js-cookie";
+import { useThemeContext } from "../../Context/ThemeContext";
 
 const drawerWidth = 240;
 
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
+const StyledAppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
-})<AppBarProps>(({ theme, open }) => ({
-  // ... Your styles ...
-}));
+})(() => {
+  const { theme: localTheme } = useThemeContext();
+  const muiTheme = useTheme();
 
-const DrawerHeader = styled("div")(({ theme }) => ({
-  // ... Your styles ...
-}));
+  if (localTheme === "light") {
+    return {
+      backgroundColor: muiTheme.palette.primary.main, // Use the primary color from MUI theme
+      color: "#333",
+    };
+  } else {
+    return {
+      backgroundColor: "#333",
+      color: "#fff",
+    };
+  }
+});
+
+const DrawerHeader = styled("div")(({ theme }) => ({}));
+const StyledDrawer = styled(Drawer)(() => {
+  const { theme: localTheme } = useThemeContext();
+  const muiTheme = useTheme(); // Get the MUI theme
+
+  return {
+    width: drawerWidth,
+    flexShrink: 0,
+    "& .MuiDrawer-paper": {
+      width: drawerWidth,
+      boxSizing: "border-box",
+      background:
+        localTheme === "light" ? muiTheme.palette.primary.main : "#202123", // Use the primary color from MUI theme for light mode
+    },
+  };
+});
 
 interface HeaderDrawerProps {
   open?: boolean;
@@ -51,42 +81,89 @@ const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
   summaries,
 }) => {
   const theme = useTheme();
+  const { theme: localTheme, toggleTheme } = useThemeContext();
+  const { token, setToken } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    setToken(null);
+    Cookies.remove("token");
+    navigate("/signin");
+  };
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      {/*@ts-ignore*/}
+      <StyledAppBar position="fixed" open={open}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={() => {
-              console.log("handleDrawerOpen");
-              setOpen(true);
-            }}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            <Link
-              to="/summary"
-              style={{ textDecoration: "none", color: "inherit" }}
+          <Box sx={{ flexGrow: 1 }}>
+            <IconButton
+              aria-label="open drawer"
+              onClick={() => {
+                console.log("handleDrawerOpen");
+                setOpen(true);
+              }}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: "none" }) }}
+              style={{ color: "#fff" }}
             >
-              AI Code Splitter
-            </Link>
-          </Typography>
-          <Button
-            component={Link}
-            to="/youtube-transcript"
-            color="inherit"
-            variant="text"
-          >
-            Go to Youtube Transcript
-          </Button>
+              <MenuIcon style={{ color: "#fff" }} />
+              <Typography variant="h6" noWrap>
+                AI Code Splitter
+              </Typography>
+            </IconButton>
+          </Box>
+          {token && (
+            <>
+              <IconButton onClick={toggleTheme}>
+                {localTheme === "light" ? (
+                  <Brightness4Icon />
+                ) : (
+                  <Brightness7Icon />
+                )}
+              </IconButton>
+              <IconButton color="inherit" onClick={handleClick}>
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem component={Link} to="/summary" onClick={handleClose}>
+                  AI Code Splitter
+                </MenuItem>
+
+                <MenuItem
+                  component={Link}
+                  to="/youtube-transcript"
+                  onClick={handleClose}
+                >
+                  Go to Youtube Transcript
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleLogout();
+                    handleClose();
+                  }}
+                >
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
+          )}
         </Toolbar>
-      </AppBar>
+      </StyledAppBar>
       <Drawer
         sx={{
           width: drawerWidth,

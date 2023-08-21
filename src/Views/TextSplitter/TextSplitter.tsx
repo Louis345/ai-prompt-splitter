@@ -12,15 +12,11 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
 
-const DrawerHeader = styled("div")(({ theme }) => ({
-  // ... Your styles ...
-}));
+const DrawerHeader = styled("div")(({ theme }) => ({}));
 
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   open?: boolean;
-}>(({ theme, open }) => ({
-  // ... Your styles ...
-}));
+}>(({ theme, open }) => ({}));
 
 const MAX_CHAR_COUNT = 10000;
 
@@ -68,7 +64,8 @@ export default function TextSplitter({
             },
           });
           if (response.status === 200) {
-            setInputText(response.data.chunks.join(" "));
+            console.log("Successfully fetched collection:", response.data);
+            setInputText(response.data.text);
           }
         } catch (error) {
           console.error("Failed to fetch collection:", error);
@@ -89,8 +86,7 @@ export default function TextSplitter({
   return (
     <Box
       sx={{
-        overflowY: "auto", // Adds vertical scrolling when needed
-        display: "flex",
+        overflowY: "auto",
         flexDirection: "column",
         justifyContent: "center",
         width: "80%",
@@ -102,14 +98,13 @@ export default function TextSplitter({
       <Main>
         <DrawerHeader />
 
-        <ChunksCopier chunks={chunks} handleCopy={handleCopy} />
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             flex: "1",
             justifyContent: "flex-end",
-            height: "100vh",
+            marginTop: "80px",
           }}
         >
           <CharacterCount inputText={inputText} />
@@ -122,10 +117,12 @@ export default function TextSplitter({
             onChange={handleTextChange}
             variant="outlined"
             fullWidth
+            style={{ marginBottom: "16px" }}
             onBlur={() => {
               if (collectionId) handleAddTranscript(collectionId, inputText);
             }}
           />
+          <ChunksCopier chunks={chunks} handleCopy={handleCopy} />
           {inputText.length > MAX_CHAR_COUNT && (
             <Box>
               <Typography sx={{ marginTop: "1rem", fontSize: "0.875rem" }}>
@@ -135,13 +132,13 @@ export default function TextSplitter({
               <Instructions />
             </Box>
           )}
-          <Box // This is the new flexbox container
+          <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between", // space the buttons equally apart
-              // align children horizontally
-              flexWrap: "wrap", // allow wrapping if the viewport is too narrow
-              marginTop: "1rem", // add some margin at the top for spacing
+              justifyContent: "space-between",
+
+              flexWrap: "wrap",
+              marginTop: "1rem",
             }}
           >
             <Button
