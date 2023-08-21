@@ -65,7 +65,9 @@ export default function TextSplitter({
           });
           if (response.status === 200) {
             console.log("Successfully fetched collection:", response.data);
-            setInputText(response.data.text);
+            const retrievedText = response.data.text;
+            setInputText(retrievedText);
+            setChunks(textChunker(retrievedText, MAX_CHAR_COUNT));
           }
         } catch (error) {
           console.error("Failed to fetch collection:", error);
